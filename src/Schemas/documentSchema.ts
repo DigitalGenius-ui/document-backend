@@ -5,5 +5,5 @@ export const documentSchema = z.object({
   content: z.string().optional(),
   mentions: z.string().array().optional(),
   documentId: z.string(),
-  visibility: z.string().optional(),
+  visibility: z.enum(["Public", "Private", "Draft"]).optional(),
 });

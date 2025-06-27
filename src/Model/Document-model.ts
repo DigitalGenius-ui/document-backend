@@ -1,6 +1,5 @@
 import { DataTypes, JSON } from "sequelize";
 import { db } from "../config/db-connection";
-import { UserModel } from "./AuthModels";
 
 export const DocumentModel = db.define(
   "documents",
@@ -18,8 +17,8 @@ export const DocumentModel = db.define(
       type: DataTypes.TEXT("long"),
     },
     visibility: {
-      type: DataTypes.ENUM("Pulbic", "Private", "Archived"),
-      defaultValue: "Private",
+      type: DataTypes.ENUM("Public", "Private", "Draft"),
+      defaultValue: "Draft",
     },
     documentId: {
       type: DataTypes.STRING,
@@ -39,7 +38,7 @@ export const DocumentModel = db.define(
 );
 
 export const DocNotifyModel = db.define(
-  "notification",
+  "notifications",
   {
     id: {
       type: DataTypes.UUID,
@@ -58,10 +57,12 @@ export const DocNotifyModel = db.define(
       type: DataTypes.UUID,
       allowNull: false,
     },
+    isOpen: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
   },
   {
     timestamps: true,
   }
 );
-
-DocumentModel.hasOne(DocNotifyModel);

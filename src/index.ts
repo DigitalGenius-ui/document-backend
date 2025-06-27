@@ -24,7 +24,7 @@ app.use("/auth", authRoute);
 app.use("/document", documentRoute);
 
 //protected routes
-app.use("/user", authMiddleware, userRoute);
+app.use("/user", userRoute);
 app.use("/session", authMiddleware, sessionRoute);
 
 // error handler

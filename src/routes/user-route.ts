@@ -1,8 +1,13 @@
 import { Router } from "express";
-import { getSingleUserHanlder } from "../controllers/user-controller";
+import {
+  getAllUsers,
+  getSingleUserHanlder,
+} from "../controllers/user-controller";
+import { authMiddleware } from "../middleware/authMiddleware";
 
 const userRoute = Router();
 
-userRoute.get("/", getSingleUserHanlder);
+userRoute.get("/", authMiddleware, getSingleUserHanlder);
+userRoute.get("/allUsers", getAllUsers);
 
 export default userRoute;
