@@ -33,7 +33,7 @@ const errorHandler: ErrorRequestHandler = async (error, req, res, next) => {
     appErrorHandler(res, error);
     return;
   }
-  res.status(INTERNAL_SERVER_ERROR).send("Internal error");
+  res.status(INTERNAL_SERVER_ERROR).send(error.message);
 };
 
 export default errorHandler;

@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import { db } from "../config/db-connection";
+import { DocumentModel } from "./Document-model";
 
 export const UserModel = db.define(
   "users",
@@ -10,6 +11,10 @@ export const UserModel = db.define(
       defaultValue: DataTypes.UUIDV4,
     },
     email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    userName: {
       type: DataTypes.STRING,
       allowNull: false,
     },
@@ -75,3 +80,6 @@ export const VerificationCodeModel = db.define("verificationCode", {
 
 UserModel.hasOne(SessionCodeModel);
 UserModel.hasOne(VerificationCodeModel);
+
+UserModel.hasMany(DocumentModel);
+DocumentModel.belongsTo(UserModel, { foreignKey: "userId" });

@@ -8,6 +8,7 @@ import authRoute from "./routes/auth-route";
 import userRoute from "./routes/user-route";
 import { authMiddleware } from "./middleware/authMiddleware";
 import sessionRoute from "./routes/session-route";
+import documentRoute from "./routes/document-route";
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use(cookieParser());
 
 // app routes
 app.use("/auth", authRoute);
+app.use("/document", documentRoute);
 
 //protected routes
 app.use("/user", authMiddleware, userRoute);

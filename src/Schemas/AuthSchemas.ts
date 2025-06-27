@@ -10,6 +10,7 @@ export const loginValidSchemas = z.object({
 
 export const registerValidSchemas = loginValidSchemas
   .extend({
+    userName: z.string().min(1).max(45),
     confirmPassword: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
