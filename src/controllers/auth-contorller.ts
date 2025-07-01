@@ -12,6 +12,7 @@ import {
   loginUser,
   refreshUserAccessToken,
   resetPassword,
+  verifyCode,
   verifyUserEmail,
 } from "../services/auth-services";
 import {
@@ -23,6 +24,7 @@ import {
 import { verifyToken } from "../utils/JWTToken";
 import { SessionCodeModel } from "../Model/AuthModels";
 import appAssert from "../utils/AppAssert";
+import { z } from "zod";
 
 export const registerHandler = catchError(async (req, res) => {
   const request = registerValidSchemas.parse({
@@ -87,6 +89,19 @@ export const verifyEmailHandler = catchError(async (req, res) => {
 
   const { user } = await verifyUserEmail(verifyCode);
   return res.status(OK).json({ message: user });
+});
+
+export const sendVerifyCode = catchError(async (req, res) => {
+  const email = z.string().parse(req.body.email);
+  const userId = req.userId;
+  appAssert(
+    userId,
+    UNAUTHORIZED,
+    "You are not authorized to access this route!"
+  );
+
+  await verifyCode({ id: userId, email });
+  return res.status(OK).json({ message: "Verify code had been sent!" });
 });
 
 export const forgotPasswordHandler = catchError(async (req, res) => {

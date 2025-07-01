@@ -56,23 +56,10 @@ export const createAccount = async (request: regRequestType) => {
 
   const { password: createdPassword, ...userData } = user.dataValues;
 
-  // create verification code
-  const verificationCode = await VerificationCodeModel.create({
-    userId: user.dataValues.id,
-    type: VerificationCodeType.EmailVerification,
-    expiresAt: oneYearFromNow(),
+  await verifyCode({
+    email: user?.dataValues.email,
+    id: user?.dataValues?.id,
   });
-
-  // send verfity email
-  const url = `${FRONTEND_URL}/email/verify/${verificationCode.dataValues.id}`;
-  const { error } = await sendEmail({
-    to: user.dataValues.email,
-    ...getVerifyEmailTemplate(url),
-  });
-
-  if (error) {
-    console.log(error);
-  }
 
   // create session
   const session = await SessionCodeModel.create({
@@ -98,6 +85,32 @@ export const createAccount = async (request: regRequestType) => {
     refreshToken,
     user: userData,
   };
+};
+
+export const verifyCode = async ({
+  email,
+  id,
+}: {
+  email: string;
+  id: string;
+}) => {
+  // create verification code
+  const verificationCode = await VerificationCodeModel.create({
+    userId: id,
+    type: VerificationCodeType.EmailVerification,
+    expiresAt: oneYearFromNow(),
+  });
+
+  // send verfity email
+  const url = `${FRONTEND_URL}/email/verify/${verificationCode.dataValues.id}`;
+  const { error } = await sendEmail({
+    to: email,
+    ...getVerifyEmailTemplate(url),
+  });
+
+  if (error) {
+    console.log(error);
+  }
 };
 
 type logRequestType = z.infer<typeof loginValidSchemas>;
@@ -237,7 +250,7 @@ export const forgotPassword = async (email: string) => {
   });
 
   appAssert(
-    requestCount >= 1,
+    requestCount <= 1,
     TOO_MANY_REQUESTS,
     "Too many requests! Please try again later."
   );

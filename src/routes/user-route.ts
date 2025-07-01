@@ -8,6 +8,6 @@ import { authMiddleware } from "../middleware/authMiddleware";
 const userRoute = Router();
 
 userRoute.get("/", authMiddleware, getSingleUserHanlder);
-userRoute.get("/allUsers", getAllUsers);
+userRoute.get("/allUsers", authMiddleware, getAllUsers);
 
 export default userRoute;

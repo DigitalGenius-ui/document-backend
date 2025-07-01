@@ -1,19 +1,20 @@
 import { z } from "zod";
 import {
-  CREATED,
   INTERNAL_SERVER_ERROR,
   NOT_FOUND,
   OK,
   UNAUTHORIZED,
 } from "../constants/http";
 import { documentSchema } from "../Schemas/documentSchema";
-import { createDocument, publicDoc } from "../services/document-service";
 import appAssert from "../utils/AppAssert";
 import catchError from "../utils/catchError";
 import { DocNotifyModel, DocumentModel } from "../Model/Document-model";
 import { UserModel } from "../Model/AuthModels";
 import { Op } from "sequelize";
+import { createDocument, updateDoc } from "../services/document-service";
+import { io } from "../index";
 
+// create doc
 export const createDocumentHandler = catchError(async (req, res) => {
   const userId = req.userId;
   appAssert(
@@ -36,6 +37,7 @@ export const createDocumentHandler = catchError(async (req, res) => {
   });
 });
 
+// get all docs
 export const getAllDocuementHandler = catchError(async (req, res) => {
   const getDocs = await DocumentModel.findAll({
     include: [
@@ -48,6 +50,7 @@ export const getAllDocuementHandler = catchError(async (req, res) => {
   return res.status(OK).json(getDocs);
 });
 
+// get single doc
 export const getSingleDocuementHandler = catchError(async (req, res) => {
   const documentId = z.string().parse(req.params.documentId);
 
@@ -61,6 +64,7 @@ export const getSingleDocuementHandler = catchError(async (req, res) => {
   return res.status(OK).json(getSingleDoc);
 });
 
+// remove doc
 export const removeDocumentHandler = catchError(async (req, res) => {
   const userId = req.userId;
   appAssert(
@@ -74,14 +78,23 @@ export const removeDocumentHandler = catchError(async (req, res) => {
     where: { documentId, userId },
   });
   appAssert(removeDocument, INTERNAL_SERVER_ERROR, "Failed to remove doc!");
-  await DocNotifyModel.destroy({
-    where: { documentId },
+
+  const removeNotify = await DocNotifyModel.destroy({
+    where: { documentId, userId: userId },
   });
+  appAssert(
+    removeNotify,
+    INTERNAL_SERVER_ERROR,
+    "Failed to remove notification!"
+  );
+
+  io.emit("removeNotify", removeNotify);
 
   return res.status(OK).json({ message: "Document has been removed!" });
 });
 
-export const publishDocHandler = catchError(async (req, res) => {
+// update user doc
+export const updateDocHandler = catchError(async (req, res) => {
   const userId = req.userId;
   appAssert(
     userId,
@@ -89,20 +102,19 @@ export const publishDocHandler = catchError(async (req, res) => {
     "You are not authorized to access this route"
   );
 
-  const visibility = z
-    .enum(["Public", "Private", "Draft"])
-    .parse(req.body.visibility);
-  const documentId = z.string().parse(req.params.documentId);
+  const body = documentSchema.parse(req.body);
 
-  await publicDoc({
-    documentId,
+  const data = {
+    ...body,
     userId,
-    visibility,
-  });
+  };
+
+  await updateDoc(data);
 
   return res.status(OK).json({ message: "Document has been published!" });
 });
 
+// get user notification
 export const getUserNotificationHandler = catchError(async (req, res) => {
   const userId = req.userId;
   appAssert(
@@ -111,7 +123,12 @@ export const getUserNotificationHandler = catchError(async (req, res) => {
     "You are not authorized to access this route"
   );
 
-  const getNotification = await DocNotifyModel.findAll({});
+  const userName = z.string().parse(req.params.userName);
+
+  const getNotification = await DocNotifyModel.findAll({
+    where: { mentionedUser: userName },
+    order: [["updatedAt", "DESC"]],
+  });
   appAssert(
     getNotification,
     INTERNAL_SERVER_ERROR,
@@ -120,6 +137,7 @@ export const getUserNotificationHandler = catchError(async (req, res) => {
   return res.status(OK).json(getNotification);
 });
 
+// open notification
 export const openNotificationHandler = catchError(async (req, res) => {
   const documentId = z.string().parse(req.params.documentId);
   const userId = req.userId;

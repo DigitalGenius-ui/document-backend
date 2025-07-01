@@ -57,6 +57,10 @@ export const DocNotifyModel = db.define(
       type: DataTypes.UUID,
       allowNull: false,
     },
+    userId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
     isOpen: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,

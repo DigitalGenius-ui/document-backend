@@ -5,26 +5,22 @@ import {
   getSingleDocuementHandler,
   getUserNotificationHandler,
   openNotificationHandler,
-  publishDocHandler,
+  updateDocHandler,
   removeDocumentHandler,
 } from "../controllers/document-contorller";
 import { authMiddleware } from "../middleware/authMiddleware";
 
 const documentRoute = Router();
 
-// /auth route
-
+// auth route
 documentRoute.post("/createDocument", authMiddleware, createDocumentHandler);
 documentRoute.post(
   "/removeDocument/:documentId",
   authMiddleware,
   removeDocumentHandler
 );
-documentRoute.post(
-  "/publishDoc/:documentId",
-  authMiddleware,
-  publishDocHandler
-);
+documentRoute.post("/updateDoc", authMiddleware, updateDocHandler);
+
 documentRoute.get(
   "/userNotification/:userName",
   authMiddleware,
